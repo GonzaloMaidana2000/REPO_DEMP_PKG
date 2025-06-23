@@ -1,0 +1,28 @@
+name: Deploy to Test Environment
+
+on:
+  push:
+    branches: [ test ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+    
+    - name: Run Flyway Migrations
+      run: |
+        ./mvnw flyway:migrate -Dflyway.url=${{ secrets.TEST_DB_URL }} \
+                             -Dflyway.user=${{ secrets.TEST_DB_USER }} \
+                             -Dflyway.password=${{ secrets.TEST_DB_PASSWORD }}
+      env:
+        FLYWAY_URL: ${{ secrets.TEST_DB_URL }}
+        FLYWAY_USER: ${{ secrets.TEST_DB_USER }}
+        FLYWAY_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
